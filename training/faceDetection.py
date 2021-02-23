@@ -77,3 +77,4 @@ for montage in montages:
 # kann ich die gefunden Images nun Clustern mit kmeans?
 # so etwas http://docs.h2o.ai/h2o/latest-stable/h2o-docs/data-science/algo-params/estimate_k.html
 
+
