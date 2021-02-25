@@ -3,7 +3,9 @@ import os
 
 # To read image from disk, we use
 # cv2.imread function, in below method,
-img = cv2.imread(os.getcwd() +"/training/images/face-detetction/geeks14.png", cv2.IMREAD_COLOR)
+img = cv2.imread(os.getcwd() +"/training/images/face-detetction/allerlei/geeks14.png", cv2.IMREAD_COLOR)
+
+print("image tpye: ", type(img)) # <class numpy.ndarray> <-- n-dimensional array
 
 # Creating GUI window to display an image on screen
 # first Parameter is windows title (should be in string format)
