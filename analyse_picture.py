@@ -49,7 +49,7 @@ print("images type: ", type(images))
 h2o.init(ip="localhost", port=54321)
 
 # wandle die images in ein h2o frame
-img_frame = h2o.H2OFrame(images.flatten())
+img_frame = h2o.H2OFrame(images)
 
 # split in train und valid frames
 train_frame, valid_frame = img_frame.split_frame(ratios=[.8], seed=1234)
