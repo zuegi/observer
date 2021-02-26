@@ -1,11 +1,12 @@
 import cv2 as cv
-import os
+import os, sys
 import face_recognition as face_recognition
 from imutils import build_montages
 
 
 # main
-images = face_recognition.load_images_from_folder(os.getcwd() +"/images/face-detetction")
+cwd = os.path.dirname(sys.argv[0])
+images = face_recognition.load_images_from_folder(cwd +"/training/images/face-detetction")
 print("Found {0} images!".format(len(images)))
 
 # initialize the list of images

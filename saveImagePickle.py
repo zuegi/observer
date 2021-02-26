@@ -9,4 +9,5 @@ img_path = cwd + "/training/images/face-detetction"
 # fc.extract_feature_and_save(img_path)
 
 # fc.extract_histogram_save(img_path)
-fc.extract_histogram_save(img_path)
+#fc.extract_histogram_save(img_path)
+fc.save_faces_np(img_path)

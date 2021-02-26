@@ -49,6 +49,45 @@ def recognize_faces(images):
     print("Found {0} image with faces!".format(len(montage_images)))
     return montage_images
 
+def recognize_faces_np(images):
+    montage_images = []
+    for image in images:
+        gray = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        # https://stackoverflow.com/questions/36218385/parameters-of-detectmultiscale-in-opencv-using-python
+        faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+        # print("Found {0} faces!".format(len(faces)))
+        for (x, y, w, h) in faces:
+            # img = cv.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
+            roi_gray = gray[y:y + h, x:x + w]
+            # roi_color = img[y:y+h, x:x+w]
+
+            eyes = eyesCascade.detectMultiScale(roi_gray, scaleFactor=1.05, minNeighbors=5, minSize=(10, 10))
+            # for (ex,ey,ew,eh) in eyes:
+            # img_eyes = cv.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),3)
+
+            smiles = smileCascade.detectMultiScale(roi_gray, minNeighbors=20)
+            # for(sx, sy, sw, sh) in smiles:
+            #     img_smile = cv.rectangle(roi_color, (sx,sy), (sx+sw,sy+sh), (0,0,255), 3)
+
+            # when faces and eyes are found append the image to array
+            if len(faces) > 0 and len(eyes) > 0 and len(smiles) > 0:
+                montage_images.append(image)
+
+    print("Found {0} image with faces!".format(len(montage_images)))
+    np_images = np.array(montage_images)
+
+    return np_images
+
+
+def save_faces_np(folder):
+    images = load_images_from_folder(folder)
+    faces = recognize_faces_np(images)
+    print("[INFO] serializing {0} images ".format(len(faces)))
+    f = open("faces.pickle", "wb")
+    f.write(pickle.dumps(faces))
+    f.close()
+
 
 def face_encode_and_save(folder):
     data = []
@@ -145,30 +184,39 @@ def extract_histogram_save(folder):
 
 def extract_histogram_save(folder):
     data=[]
+    histSize = 256
+    histRange = (0, 128) # the upper boundary is exclusive
+    hist_w = 512
+    hist_h = 400
+    bin_w = int(round( hist_w/histSize ))
+    histImage = np.zeros((hist_h, hist_w, 3), dtype=np.uint8)
+    accumulate = False
+
     image_paths = list(paths.list_images(folder))
     print("[INFO] found {0} images ".format(len(image_paths)))
     for (i, imagePath) in enumerate(image_paths):
         image = cv.imread(imagePath)
-        img = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        faces = faceCascade.detectMultiScale(img, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        # img = cv.cvtColor(image)
+        faces = faceCascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         # print("Found {0} faces!".format(len(faces)))
         for (x, y, w, h) in faces:
-            roi_img = img[y:y + h, x:x + w]
+            roi_img = image[y:y + h, x:x + w]
             eyes = eyesCascade.detectMultiScale(roi_img, scaleFactor=1.05, minNeighbors=5, minSize=(10, 10))
             smiles = smileCascade.detectMultiScale(roi_img, minNeighbors=20)
             if len(faces) > 0 and len(eyes) > 0 and len(smiles) > 0:
+
                 # extract a 3D RGB color histogram from the image,
                 # using 8 bins per channel, normalize, and update
                 # the index
-                hist = cv.calcHist([image], [0, 1, 2], None, [8, 8, 8],
-                                   [0, 256, 0, 256, 0, 256])
+                hist = cv.calcHist([image], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+                # hist = cv.calcHist([roi_img], [0, 1, 2], None, [histSize], histRange)
                 hist = cv.normalize(hist, hist).flatten()
-                d = [{"imagePath": imagePath, "image": image}]
+                d = [{"imagePath": imagePath, "image": hist}]
                 data.extend(d)
 
     # dump the facial encodings data to disk
-    print("[INFO] serializing {0} images with features ".format(len(data)))
+    print("[INFO] serializing {0} images with histogram ".format(len(data)))
     f = open("image_path_with_image.pickle", "wb")
     f.write(pickle.dumps(data))
     f.close()
